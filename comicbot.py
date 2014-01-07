@@ -2,6 +2,8 @@ import urllib2
 from bs4 import BeautifulSoup
 import datetime
 from collections import defaultdict
+import time
+import pdb
 
 class CLDBotError(Exception):
     pass
@@ -66,8 +68,11 @@ class CLDBot(object):
             for link in soup.find_all('a'):
                 if name in link.get_text():
                     strdate = str(link.parent.parent.contents[1].contents[0])
-                    middate = time.strptime(strdate, '%m/%d/%y')
-                    date = str(datetime.date(middate.tm_year, middate.tm_mon, middate.tm_mday))
+                    try:
+                        middate = time.strptime(strdate, '%m/%d/%y')
+                        date = str(datetime.date(middate.tm_year, middate.tm_mon, middate.tm_mday))
+                    except ValueError:
+                        date = strdate
                     my_books[date].append(link.get_text())
         return my_books
 
@@ -133,7 +138,9 @@ class CLDBot(object):
         if len(books.keys()) == 0:
             return "We can't find predictions for you, sorry!"
         else:
-            predictions = [self.print_books_per_day(date,issues) for date, issues in books.iteritems()]
+            
+            unsorted = [(date, self.print_books_per_day(date,issues)) for date, issues in books.iteritems()]
+            predictions = [book_list for (date, book_list) in sorted(unsorted)]
             body = '\n\n'.join(predictions)
             intro = "Predictions by book. Accuracy not guaranteed!"
             out = '\n\n'.join([intro, body])
