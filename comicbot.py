@@ -138,7 +138,6 @@ class CLDBot(object):
         if len(books.keys()) == 0:
             return "We can't find predictions for you, sorry!"
         else:
-            
             unsorted = [(date, self.print_books_per_day(date,issues)) for date, issues in books.iteritems()]
             predictions = [book_list for (date, book_list) in sorted(unsorted)]
             body = '\n\n'.join(predictions)
@@ -146,8 +145,8 @@ class CLDBot(object):
             out = '\n\n'.join([intro, body])
             return out
             
-    def add_to_pull(self, title):
-        self.pull_list.append(title)
+    def add_to_pull(self, *titles):
+        self.pull_list.extend(titles)
 # 
 # 
 # 
