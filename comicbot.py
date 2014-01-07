@@ -118,23 +118,23 @@ class CLDBot(object):
             out = self.print_books_per_day(date, books)
             return out
             
-    def predict(self, publisher=None, *titles):
+    def predict(self, *titles):
         if not titles:
             titles = None
+        else:
+            publishers = [name for name in titles if name in self.futures]
+            titles = [name for name in titles if name not in publishers]
+        if not publishers:
+            publishers = self.futures.keys()
         try:
             self.__getattribute__('future_soups')
         except AttributeError:
             self.future_soups = self.make_future_soups()
-        if publisher:
-            if publisher not in self.future_soups:
-                raise CLDBotError("I don't have predictions for %s." % publisher)
-            books = self.check_table_soup(self.future_soups[publisher], titles=titles)
-        else:
-            books = defaultdict(list)
-            for pub, soup in self.future_soups.iteritems():
-                new_books = self.check_table_soup(soup, titles=titles)
-                for date, issues in new_books.iteritems():
-                    books[date].extend(issues)
+        books = defaultdict(list)
+        for pub in publishers:
+            new_books = self.check_table_soup(self.future_soups[pub], titles=titles)
+            for date, issues in new_books.iteritems():
+                books[date].extend(issues)
         if len(books.keys()) == 0:
             return "We can't find predictions for you, sorry!"
         else:
