@@ -61,12 +61,12 @@ class CLDBot(object):
         '''for future predictions, data is in table, not a list of links'''
         if not titles:
             titles = self.pull_list
-        my_books = defaultdict(lambda: defaultdict(list))
+        my_books = defaultdict(list)
         for name in titles:
             for link in soup.find_all('a'):
                 if name in link.get_text():
                     date = link.parent.parent.contents[1].contents
-                    my_books[name][date].append(link.get_text())
+                    my_books[date].append(link.get_text())
         return my_books
 
     def make_future_soups(self):
@@ -75,7 +75,12 @@ class CLDBot(object):
             future_soups[publisher] = self.make_soup(url)
         return future_soups
         
-#    def print_books_per_day(self, date, 
+    def print_books_per_day(self, date, books):
+        books.append('\n')
+        books_out = '\n'.join(books)
+        intro = "On {0}, the following titles are coming out:".format(date)
+        out = '\n\n'.join([intro, books_out])
+        return out
 
     def print_pull(self):
         self.pull_list.append('\n')
@@ -91,10 +96,8 @@ class CLDBot(object):
         if len(books) == 0:
             return "Nothing is coming out this week for you, sorry!"
         else:
-            books.append('\n')
-            books_out = '\n'.join(books)
-            intro = "This week, the following titles are coming out:\n"
-            out = '\n'.join([intro, books_out])
+            date = str(self.this_weds)
+            out = self.print_books_per_day(date, books)
             return out
 
     def next_week(self, *titles):
@@ -104,10 +107,8 @@ class CLDBot(object):
         if len(books) == 0:
             return "Nothing is coming out this week for you, sorry!"
         else:
-            books.append('\n')
-            books_out = '\n'.join(books)
-            intro = "Next week, the following titles are coming out:\n"
-            out = '\n'.join([intro, books_out])
+            date = str(self.this_weds+datetime.timedelta(days=7))
+            out = self.print_books_per_day(date, books)
             return out
             
     def predict(self, publisher=None, *titles):
