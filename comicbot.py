@@ -65,7 +65,9 @@ class CLDBot(object):
         for name in titles:
             for link in soup.find_all('a'):
                 if name in link.get_text():
-                    date = link.parent.parent.contents[1].contents
+                    strdate = str(link.parent.parent.contents[1].contents[0])
+                    middate = time.strptime(strdate, '%m/%d/%y')
+                    date = str(datetime.date(middate.tm_year, middate.tm_mon, middate.tm_mday))
                     my_books[date].append(link.get_text())
         return my_books
 
@@ -123,24 +125,19 @@ class CLDBot(object):
                 raise CLDBotError("I don't have predictions for %s." % publisher)
             books = self.check_table_soup(self.future_soups[publisher], titles=titles)
         else:
-            books = {}
+            books = defaultdict(list)
             for pub, soup in self.future_soups.iteritems():
-                books.update(self.check_table_soup(soup), titles=titles)
-            if len(books.keys()) == 0:
-                return "We can't find predictions for you, sorry!"
-            else:
-                book_predictions = []
-                for book, data in books.iteritems():
-                    book_dates = ''
-                    for date, issue in data.iteritems():
-                        line = '\t'.join([date, issue])
-                        line.append('\n')
-                        book_dates.append(line)
-                    book_summary = '\n\n'.join([book, book_dates])
-                    book_predictions.append(book_summary)
-                body = '\n\n'.join(book_predictions)
-                intro = "Predictions by book. Accuracy not guaranteed!"
-                out = '\n\n'.join([intro, body])
+                new_books = self.check_table_soup(soup, titles=titles)
+                for date, issues in new_books.iteritems():
+                    books[date].extend(issues)
+        if len(books.keys()) == 0:
+            return "We can't find predictions for you, sorry!"
+        else:
+            predictions = [self.print_books_per_day(date,issues) for date, issues in books.iteritems()]
+            body = '\n\n'.join(predictions)
+            intro = "Predictions by book. Accuracy not guaranteed!"
+            out = '\n\n'.join([intro, body])
+            return out
             
     def add_to_pull(self, title):
         self.pull_list.append(title)
