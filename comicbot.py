@@ -81,7 +81,7 @@ class CLDBot(object):
         for publisher, url in self.futures.iteritems():
             future_soups[publisher] = self.make_soup(url)
         return future_soups
-        
+
     def print_books_per_day(self, date, books):
         books.append('\n')
         books_out = '\n'.join(books)
@@ -89,11 +89,15 @@ class CLDBot(object):
         out = '\n\n'.join([intro, books_out])
         return out
 
-    def print_pull(self):
-        self.pull_list.append('\n')
-        pulled = '\n'.join(self.pull_list)
-        intro = "You are currently pulling:\n"
-        out = '\n'.join([intro, pulled])
+    def print_pull(self, *titles):
+        if titles:
+            pulled_titles = [title for title in titles if title in self.pull_list]
+            intro = "Of those titles, you are currently pulling:"
+        else:
+            pulled_titles = self.pull_list.append('\n')
+            intro = "You are currently pulling:"
+        pulled = '\n'.join(pulled_titles)
+        out = '\n\n'.join([intro, pulled])
         return out
         
     def this_week(self, *titles):
