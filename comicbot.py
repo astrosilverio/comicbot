@@ -163,7 +163,21 @@ class CLDBot(object):
 
     def add_to_pull(self, *titles):
         '''adds things to pull list'''
+        if titles:
+            repeats = [title for title in titles if title in self.pull_list]
+            titles = [title for title in titles if title not in self.pull_list]
+        if not titles:
+            raise CLDBotError("trying to add nothing")
+        intro = "The following titles were added to your pull list:"
+        added = '\n'.join(titles)
+        if repeats:
+            repeat_intro = "The following titles were already in your pull list:"
+            not_added = '\n'.join(repeats)
+            out = '\n\n'.join([intro, added, repeat_intro, not_added])
+        else:
+            out = '\n\n'.join([intro, added])
         self.pull_list.extend(titles)
+        return out
         
     def remove_from_pull(self, *titles):
         '''removes things from pull list'''
