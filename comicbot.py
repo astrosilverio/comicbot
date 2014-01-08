@@ -189,9 +189,9 @@ class CLDBot(object):
         finally:
             return result
 
-def main(pull):
+def main(pull_list_file):
     '''main loop'''
-    comics_jarvis = CLDBot(pull)
+    comics_jarvis = CLDBot(pull_list_file)
     running = True
     while running:
         user_input = raw_input('> ')
@@ -203,7 +203,7 @@ def main(pull):
             
 if __name__ == '__main__':
     try:
-        pull = sys.argv[1]
+        pull_list_file = sys.argv[1]
     except IndexError:
-        pull = raw_input("You need to give me a pull list. Filename? ")
-    main(pull)
+        pull_list_file = raw_input("You need to give me a pull list. Filename? ")
+    main(pull_list_file)
