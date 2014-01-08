@@ -101,7 +101,8 @@ class CLDBot(object):
             pulled_titles = [title for title in titles if title in self.pull_list]
             intro = "Of those titles, you are currently pulling:"
         else:
-            pulled_titles = self.pull_list.append('\n')
+            pulled_titles = self.pull_list[:]
+            pulled_titles.append('\n')
             intro = "You are currently pulling:"
         pulled = '\n'.join(pulled_titles)
         out = '\n\n'.join([intro, pulled])
