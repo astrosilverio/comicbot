@@ -17,7 +17,8 @@ class CLDBot(object):
 'DC':'http://www.comiclist.com/index.php/lists/dc-comics-extended-forecast-for-01-08-2014', 
     'Image': 'http://www.comiclist.com/index.php/lists/image-comics-extended-forecast-for-01-08-2014'}
     ignores = ['to', 'in', 'if', 'get', 'week', 'for', 'this', 'and', 'or']
-    command_words = ['next', 'add', 'remove','predict', 'future','check', 'pull']
+    command_words = ['next', 'add', 'remove','predict','future','pull', 'check']
+    
     def __init__(self, pull_list):
         self.pull_list = self.make_pull_list(pull_list)
         self.today = datetime.date.today()
@@ -51,8 +52,8 @@ class CLDBot(object):
         return soup
 
     def check_soup(self, soup, titles=None):
-        ''' For current and next weeks, all the comics are links
-        e.g. <a href="http://www.shareasale.com/r.cfm?u=167587&amp;b=84187&amp;m=8908&amp;afftrack=special1&amp;urllink=www.tfaw.com/Profile/Halo%3A-Escalation-2___440091%3Fqt%3Dssnrp20140102">Halo Escalation #2</a>'''
+        ''' For current and next weeks, all the comics are links,
+        so search for links'''
         if not titles:
             titles = self.pull_list
         my_books = []
@@ -80,12 +81,14 @@ class CLDBot(object):
         return my_books
 
     def make_future_soups(self):
+        '''make soups for predictions pages'''
         future_soups = {}
         for publisher, url in self.futures.iteritems():
             future_soups[publisher] = self.make_soup(url)
         return future_soups
 
     def print_books_per_day(self, date, books):
+        '''turns a list of titles into a string'''
         books.append('\n')
         books_out = '\n'.join(books)
         intro = "On {0}, the following titles are coming out:".format(date)
@@ -93,6 +96,7 @@ class CLDBot(object):
         return out
 
     def print_pull(self, *titles):
+        '''either prints your pull or tells you if certain titles are in your pull'''
         if titles:
             pulled_titles = [title for title in titles if title in self.pull_list]
             intro = "Of those titles, you are currently pulling:"
@@ -104,6 +108,7 @@ class CLDBot(object):
         return out
 
     def this_week(self, *titles):
+        '''checks current week's comiclist for titles'''
         if not titles:
             titles = None
         books = self.check_soup(self.soups[self.this_weds], titles=titles)
@@ -115,6 +120,7 @@ class CLDBot(object):
             return out
 
     def next_week(self, *titles):
+        '''checks next week's comiclist for titles'''
         if not titles:
             titles = None
         books = self.check_soup(self.soups[self.this_weds+datetime.timedelta(days=7)], titles=titles)
@@ -126,6 +132,7 @@ class CLDBot(object):
             return out
             
     def predict(self, *titles):
+        '''checks predictions pages for titles'''
         if not titles:
             titles = None
             publishers = None
@@ -154,15 +161,18 @@ class CLDBot(object):
             return out
 
     def add_to_pull(self, *titles):
+        '''adds things to pull list'''
         self.pull_list.extend(titles)
         
     def remove_from_pull(self, *titles):
+        '''removes things from pull list'''
         if not titles:
             raise CLDBotError("nothing to remove")
         for title in titles:
             self.pull_list.remove(title)
 
     def process(self, user_input):
+        '''attempts to process user input'''
         words = user_input.split()
         words = [word for word in words if word not in self.ignores]
         commands = [word for word in words if word in self.command_words]
@@ -180,6 +190,7 @@ class CLDBot(object):
             return result
 
 def main(pull):
+    '''main loop'''
     comics_jarvis = CLDBot(pull)
     running = True
     while running:
