@@ -16,7 +16,7 @@ class CLDBot(object):
     futures = {'Marvel': 'http://www.comiclist.com/index.php/lists/marvel-comics-extended-forecast-for-01-08-2014',
 'DC':'http://www.comiclist.com/index.php/lists/dc-comics-extended-forecast-for-01-08-2014', 
     'Image': 'http://www.comiclist.com/index.php/lists/image-comics-extended-forecast-for-01-08-2014'}
-    ignores = ['to', 'in', 'if', 'get', 'week', 'for', 'this', 'and', 'or']
+    ignores = ['to', 'in', 'if', 'get', 'week', 'for', 'this', 'and', 'or', 'print']
     command_words = ['next', 'add', 'remove','predict','future','pull', 'check']
     
     def __init__(self, pull_list):
