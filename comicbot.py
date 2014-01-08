@@ -125,6 +125,7 @@ class CLDBot(object):
     def predict(self, *titles):
         if not titles:
             titles = None
+            publishers = None
         else:
             publishers = [name for name in titles if name in self.futures]
             titles = [name for name in titles if name not in publishers]
