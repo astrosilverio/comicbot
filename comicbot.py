@@ -15,12 +15,14 @@ class CLDBot(object):
     futures = {'Marvel': 'http://www.comiclist.com/index.php/lists/marvel-comics-extended-forecast-for-01-08-2014',
 'DC':'http://www.comiclist.com/index.php/lists/dc-comics-extended-forecast-for-01-08-2014', 
     'Image': 'http://www.comiclist.com/index.php/lists/image-comics-extended-forecast-for-01-08-2014'}
-
+    ignores = ['to', 'in', 'if', 'get', 'week', 'for', 'this', 'and', 'or']
+    command_words = ['next', 'add', 'remove','predict', 'future','check', 'pull']
     def __init__(self, pull_list):
         self.pull_list = self.make_pull_list(pull_list)
         self.today = datetime.date.today()
         self.this_weds = self.get_weds(self.today)
         self.soups = {self.this_weds: self.make_soup(self.current_week_url), self.this_weds+datetime.timedelta(days=7): self.make_soup(self.next_week_url)}
+        self.queries = {'next': self.next_week, 'add': self.add_to_pull, 'remove': self.remove_from_pull, 'predict': self.predict, 'future': self.predict, 'check': self.this_week, 'pull': self.print_pull}
 
     def make_pull_list(self, pull_file):
         '''only relevant when CLDBot is instantiated'''
@@ -152,43 +154,27 @@ class CLDBot(object):
 
     def add_to_pull(self, *titles):
         self.pull_list.extend(titles)
-# 
-# 
-# 
-# 
-# 
-# 
-#     def __init__(self, pull_list):
-#         self.pull_list = self.make_pull_list(pull_list)
-#         self.current_soup = self.make_soup(self.current_week)
-#         self.queries = {'current': self.check_soup, 'next': self.check_next_week}
-# 
-#         print(self)
-#         
-#     def __str__(self):
-#         current_books = self.check_soup(self.current_soup)
-#         books = '\n'.join(current_books)
-#         return books
-#         
-# 
-#         
-# 
-#         
-# 
-#         
-#     def check_next_week(self, titles=None):
-#         next_soup = self.make_soup(self.next_week)
-#         books = self.check_soup(next_soup, titles=titles)
-#         return books
-#         
-#     def check_title(self, title):
-#         pass
-#         
-#     def process(self, user_input):
-#         words = user_input.split()
-#         command = words[0]
-#         args = words[1:]
-#         try:
-#             result = self.queries[command](*args)
-#         except:
-#             raise CLDBotError('didnt work')
+        
+    def remove_from_pull(self, *titles):
+        if not titles:
+            raise CLDBotError("nothing to remove")
+        for title in titles:
+            self.pull_list.remove(title)
+
+    def process(self, user_input):
+        words = user_input.split()
+        words = [word for word in words if word not in self.ignores]
+        commands = [word for word in words if word in self.command_words]
+        titles = [word for word in words if word not in self.command_words]
+        try:
+            if not commands:
+                raise CLDBotError("no recognizable command")
+            indices = [self.command_words.index(word) for word in commands]
+            priorities = sorted(zip(indices, commands))
+            fn_to_call = self.queries[priorities[0][1]]
+            result = fn_to_call(*titles)
+        except CLDBotError as exception:
+            result = ' '.join(['ERROR:', exception.args[0]])
+        finally:
+            return result
+
