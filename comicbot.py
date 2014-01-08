@@ -179,3 +179,20 @@ class CLDBot(object):
         finally:
             return result
 
+def main(pull):
+    comics_jarvis = CLDBot(pull)
+    running = True
+    while running:
+        user_input = raw_input('> ')
+        if user_input == 'quit':
+            running = False
+        output = comics_jarvis.process(user_input)
+        if output:
+            print output
+            
+if __name__ == '__main__':
+    try:
+        pull = sys.argv[1]
+    except IndexError:
+        pull = raw_input("You need to give me a pull list. Filename? ")
+    main(pull)
