@@ -149,7 +149,7 @@ class CLDBot(object):
             intro = "Predictions by book. Accuracy not guaranteed!"
             out = '\n\n'.join([intro, body])
             return out
-            
+
     def add_to_pull(self, *titles):
         self.pull_list.extend(titles)
 # 
