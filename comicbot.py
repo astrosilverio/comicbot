@@ -30,7 +30,7 @@ class CLDBot(object):
         return books
 
     def get_weds(self, day):
-        '''returns the Wednesday of the week starting with Monday; I'm assuming that ComicList updates every Monday, which is historically the case
+        '''returns the Wednesday of the week starting with Monday; I'm assuming that ComicList updates every Monday, which is historically the case.
         assumes that day is a datetime.date object'''
         if type(day) != datetime.date:
             raise CLDBotError("get_weds takes a datetime.date object as input")
