@@ -59,7 +59,7 @@ class CLDBot(object):
                     my_books.append(link.get_text())
         return my_books
         
-    def check_table_soup(self, soup, titles=None):
+    def check_future_soup(self, soup, titles=None):
         '''for future predictions, data is in table, not a list of links'''
         if not titles:
             titles = self.pull_list
@@ -99,7 +99,7 @@ class CLDBot(object):
         pulled = '\n'.join(pulled_titles)
         out = '\n\n'.join([intro, pulled])
         return out
-        
+
     def this_week(self, *titles):
         if not titles:
             titles = None
@@ -136,7 +136,7 @@ class CLDBot(object):
             self.future_soups = self.make_future_soups()
         books = defaultdict(list)
         for pub in publishers:
-            new_books = self.check_table_soup(self.future_soups[pub], titles=titles)
+            new_books = self.check_future_soup(self.future_soups[pub], titles=titles)
             for date, issues in new_books.iteritems():
                 books[date].extend(issues)
         if len(books.keys()) == 0:
