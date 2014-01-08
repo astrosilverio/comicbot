@@ -1,9 +1,10 @@
 import urllib2
-from bs4 import BeautifulSoup
 import datetime
-from collections import defaultdict
 import time
-import pdb
+import sys
+from bs4 import BeautifulSoup
+from collections import defaultdict
+
 
 class CLDBotError(Exception):
     pass
