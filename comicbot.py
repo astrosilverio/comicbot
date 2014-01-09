@@ -189,20 +189,25 @@ class CLDBot(object):
     def process(self, user_input):
         '''attempts to process user input'''
         words = user_input.split()
-        words = [word for word in words if word not in self.ignores]
-        commands = [word for word in words if word in self.command_words]
-        titles = [word for word in words if word not in self.command_words]
-        try:
-            if not commands:
-                raise CLDBotError("no recognizable command")
-            indices = [self.command_words.index(word) for word in commands]
-            priorities = sorted(zip(indices, commands))
-            fn_to_call = self.queries[priorities[0][1]]
-            result = fn_to_call(*titles)
-        except CLDBotError as exception:
-            result = ' '.join(['ERROR:', exception.args[0]])
-        finally:
-            return result
+        command = words[0]
+        titles = words[1:]
+        titles = [word.lstrip().rstrip().title() for word in ' '.join(titles).split(',')]
+        return command, titles
+#         try:
+#             if not commands:
+#                 raise CLDBotError("no recognizable command")
+#             indices = [self.command_words.index(word) for word in commands]
+#             priorities = sorted(zip(indices, commands))
+#             fn_to_call = self.queries[priorities[0][1]]
+#             result = fn_to_call(*titles)
+#             print "completed  ", result
+#         except:
+#             exception = sys.exc_info()
+#             result = ' '.join(['ERROR:', exception[1]])
+#             print "errored  ", result
+#         finally:
+# #            return "f you"
+#             return result
 
 def main(pull_list_file):
     '''main loop'''
