@@ -24,7 +24,7 @@ class CLDBot(object):
         self.today = datetime.date.today()
         self.this_weds = self.get_weds(self.today)
         self.soups = {self.this_weds: self.make_soup(self.current_week_url), self.this_weds+datetime.timedelta(days=7): self.make_soup(self.next_week_url)}
-        self.queries = {'next': self.next_week, 'add': self.add_to_pull, 'remove': self.remove_from_pull, 'predict': self.predict, 'future': self.predict, 'check': self.this_week, 'pull': self.print_pull}
+        self.queries = {'next': self.next_week, 'add': self.add_to_pull, 'remove': self.remove_from_pull, 'future': self.predict, 'check': self.this_week, 'pull': self.print_pull}
 
     def make_pull_list(self, pull_file):
         '''only relevant when CLDBot is instantiated'''
@@ -183,31 +183,38 @@ class CLDBot(object):
         '''removes things from pull list'''
         if not titles:
             raise CLDBotError("nothing to remove")
-        for title in titles:
+        if titles:
+            to_remove = [title for title in titles if title in self.pull_list]
+            not_in_pull = [title for title in titles if title not in self.pull_list]
+        intro = "The following titles were removed from your pull list:"
+        removed = '\n'.join(to_remove)
+        if not_in_pull:
+            not_found_intro = "The following titles are not in your pull list:"
+            not_found = '\n'.join(not_in_pull)
+            out = '\n\n'.join([intro, removed, not_found_intro, not_found])
+        else:
+            out = '\n\n'.join([intro, removed])
+        for title in to_remove:
             self.pull_list.remove(title)
+        return out
 
     def process(self, user_input):
         '''attempts to process user input'''
         words = user_input.split()
         command = words[0]
         titles = words[1:]
-        titles = [word.lstrip().rstrip().title() for word in ' '.join(titles).split(',')]
-        return command, titles
-#         try:
-#             if not commands:
-#                 raise CLDBotError("no recognizable command")
-#             indices = [self.command_words.index(word) for word in commands]
-#             priorities = sorted(zip(indices, commands))
-#             fn_to_call = self.queries[priorities[0][1]]
-#             result = fn_to_call(*titles)
-#             print "completed  ", result
-#         except:
-#             exception = sys.exc_info()
-#             result = ' '.join(['ERROR:', exception[1]])
-#             print "errored  ", result
-#         finally:
-# #            return "f you"
-#             return result
+        titles = [word.lstrip().rstrip().title() for word in ' '.join(titles).split(',') if word]
+        try:
+            if command not in self.queries:
+                raise CLDBotError('no recognizable command')
+            print "success"
+            print command, titles
+            result = self.queries[command](*titles)
+        except CLDBotError as exc:
+            print "error"
+            result = exc.args[0]
+        finally:
+            return result
 
 def main(pull_list_file):
     '''main loop'''
