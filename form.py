@@ -3,7 +3,7 @@ from comicbot import CLDBot
 import unicodedata
 
 app = Flask(__name__)
-bot = CLDBot('pull.txt')
+bot = CLDBot('empty.txt')
 
 @app.route('/', methods = ['GET', 'POST'])
 def main():
