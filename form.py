@@ -1,5 +1,6 @@
 from flask import Flask, request, redirect, render_template, g
 from comicbot import CLDBot
+import unicodedata
 
 app = Flask(__name__)
 bot = CLDBot('pull.txt')
@@ -12,6 +13,7 @@ def main():
         # request was a POST
         user_input = request.form['user_input']
         g.message = bot.process(user_input)
+        print type(g.message)
         return render_template('main.html')
         
 if __name__ == '__main__':
