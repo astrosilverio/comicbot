@@ -2,6 +2,7 @@ import urllib2
 import datetime
 import time
 import sys
+import re
 from bs4 import BeautifulSoup
 from collections import defaultdict
 
@@ -67,7 +68,7 @@ class CLDBot(object):
         '''for future predictions, data is in table, not a list of links'''
         if not titles:
             titles = self.pull_list
-        my_books = defaultdict(list)
+        my_books = defaultdict(lambda: defaultdict(list))
         for name in titles:
             for link in soup.find_all('a'):
                 if name in link.get_text():
@@ -77,7 +78,16 @@ class CLDBot(object):
                         date = str(datetime.date(middate.tm_year, middate.tm_mon, middate.tm_mday))
                     except ValueError:
                         date = strdate
-                    my_books[date].append(link.get_text())
+                    variant = re.findall('\([^()]+\)', link.get_text())
+                    if len(variant) == 0:
+                        issue = link.get_text()
+                        # if there aren't variants, make an empty list
+                        my_books[date][issue]
+                    else:
+                        issue = re.sub('\([^()]+\)', '', link.get_text()).rstrip()
+                        issue = ' '.join([issue] + variant[:-1])
+                        variant = variant[-1]
+                        my_books[date][issue].append(variant)
         return my_books
 
     def make_future_soups(self):
@@ -91,6 +101,24 @@ class CLDBot(object):
         '''turns a list of titles into a string'''
         books.append('\n')
         books_out = '\n'.join(books)
+        intro = "On {0}, the following titles are coming out:".format(date)
+        out = '\n\n'.join([intro, books_out])
+        return out
+        
+    def print_future_books_per_day(self, date, books):
+        '''turns a dictionary of titles into a string'''
+        book_entries = []
+        for issue, variants in books.iteritems():
+            if len(variants) > 1:
+                variants = ['\t'+variant for variant in variants]
+                book_entry = '\n'.join([issue]+variants)
+            elif len(variants) == 1:
+                book_entry = ' '.join([issue]+variants)
+            else:
+                book_entry = issue
+            book_entries.append(book_entry)
+        book_entries.append('\n')
+        books_out = '\n'.join(book_entries)
         intro = "On {0}, the following titles are coming out:".format(date)
         out = '\n\n'.join([intro, books_out])
         return out
@@ -146,15 +174,15 @@ class CLDBot(object):
             self.__getattribute__('future_soups')
         except AttributeError:
             self.future_soups = self.make_future_soups()
-        books = defaultdict(list)
+        books = defaultdict(lambda: defaultdict(list))
         for pub in publishers:
             new_books = self.check_future_soup(self.future_soups[pub], titles=titles)
             for date, issues in new_books.iteritems():
-                books[date].extend(issues)
+                books[date].update(issues)
         if len(books.keys()) == 0:
             return "We can't find predictions for you, sorry!"
         else:
-            unsorted = [(date, self.print_books_per_day(date,issues)) for date, issues in books.iteritems()]
+            unsorted = [(date, self.print_future_books_per_day(date,issues)) for date, issues in books.iteritems()]
             predictions = [book_list for (date, book_list) in sorted(unsorted)]
             body = '\n\n'.join(predictions)
             intro = "Predictions by book. Accuracy not guaranteed!"
