@@ -57,11 +57,19 @@ class CLDBot(object):
         so search for links'''
         if not titles:
             titles = self.pull_list
-        my_books = []
+        my_books = defaultdict(list)
         for name in titles:
             for link in soup.find_all('a'):
                 if name in link.get_text():
-                    my_books.append(link.get_text())
+                    variant = re.findall('\([^()]+\)', link.get_text())
+                    if len(variant) == 0:
+                        issue = link.get_text()
+                        my_books[issue]
+                    else:
+                        issue = re.sub('\([^()]+\)', '', link.get_text()).rstrip()
+                        issue = ' '.join([issue] + variant[:-1])
+                        variant = variant[-1]
+                        my_books[issue].append(variant)
         return my_books
         
     def check_future_soup(self, soup, titles=None):
@@ -98,14 +106,6 @@ class CLDBot(object):
         return future_soups
 
     def print_books_per_day(self, date, books):
-        '''turns a list of titles into a string'''
-        books.append('\n')
-        books_out = '\n'.join(books)
-        intro = "On {0}, the following titles are coming out:".format(date)
-        out = '\n\n'.join([intro, books_out])
-        return out
-        
-    def print_future_books_per_day(self, date, books):
         '''turns a dictionary of titles into a string'''
         book_entries = []
         for issue, variants in books.iteritems():
@@ -182,7 +182,7 @@ class CLDBot(object):
         if len(books.keys()) == 0:
             return "We can't find predictions for you, sorry!"
         else:
-            unsorted = [(date, self.print_future_books_per_day(date,issues)) for date, issues in books.iteritems()]
+            unsorted = [(date, self.print_books_per_day(date,issues)) for date, issues in books.iteritems()]
             predictions = [book_list for (date, book_list) in sorted(unsorted)]
             body = '\n\n'.join(predictions)
             intro = "Predictions by book. Accuracy not guaranteed!"
