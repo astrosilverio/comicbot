@@ -3,10 +3,10 @@ from comicbot import CLDBot
 import unicodedata
 
 app = Flask(__name__)
-bot = CLDBot('empty.txt')
 
 @app.route('/', methods = ['GET', 'POST'])
 def main():
+    bot = CLDBot('empty.txt')
     if request.method == 'GET':
         return render_template('main.html')
     elif request.method == 'POST':
