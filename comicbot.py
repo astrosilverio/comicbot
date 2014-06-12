@@ -14,9 +14,6 @@ class CLDBot(object):
 
     current_week_url = 'http://www.comiclist.com'
     next_week_url = 'http://www.comiclist.com/index.php/newreleases/next-week'
-    futures = {'Marvel': 'http://www.comiclist.com/index.php/lists/marvel-comics-extended-forecast-for-01-08-2014',
-'DC':'http://www.comiclist.com/index.php/lists/dc-comics-extended-forecast-for-01-08-2014', 
-    'Image': 'http://www.comiclist.com/index.php/lists/image-comics-extended-forecast-for-01-08-2014'}
     ignores = ['to', 'in', 'if', 'get', 'week', 'for', 'this', 'and', 'or', 'print']
     command_words = ['next', 'add', 'remove','predict','future','pull', 'check']
     
@@ -24,6 +21,13 @@ class CLDBot(object):
         self.pull_list = self.make_pull_list(pull_list)
         self.today = datetime.date.today()
         self.this_weds = self.get_weds(self.today)
+        m_d_y = self.make_m_d_y(self.this_weds)
+        self.futures = {'Marvel': 'http://www.comiclist.com/index.php/lists/marvel-comics-extended-forecast-for-'+m_d_y,
+                'DC':'http://www.comiclist.com/index.php/lists/dc-comics-extended-forecast-for-'+m_d_y, 
+                'Image': 'http://www.comiclist.com/index.php/lists/image-comics-extended-forecast-for-'+m_d_y,
+                'BOOM': 'http://www.comiclist.com/index.php/lists/boom-studios-extended-forecast-for-'+m_d_y,
+                'Dark Horse': 'http://www.comiclist.com/index.php/lists/dark-horse-comics-extended-forecast-for-'+m_d_y
+                }
         self.soups = {self.this_weds: self.make_soup(self.current_week_url), self.this_weds+datetime.timedelta(days=7): self.make_soup(self.next_week_url)}
         self.queries = {'next': self.next_week, 'add': self.add_to_pull, 'remove': self.remove_from_pull, 'future': self.predict, 'check': self.this_week, 'pull': self.print_pull}
 
@@ -46,6 +50,23 @@ class CLDBot(object):
             delta = 2 - day_of_week
             weds = self.today + datetime.timedelta(days=delta)
             return weds
+
+    def make_m_d_y(self, weds):
+        month = weds.month
+        day = weds.day
+        year = str(weds.year)
+
+        if month < 10:
+            month = '0'+str(month)
+        else:
+            month = str(month)
+        if day < 10:
+            day = '0'+str(day)
+        else:
+            day = str(day)
+
+        m_d_y = '-'.join([month, day, year])
+        return m_d_y
 
     def make_soup(self, url_of_html):
         '''not super necessary but the urllib stuff is a pain to type'''
@@ -102,7 +123,11 @@ class CLDBot(object):
         '''make soups for predictions pages'''
         future_soups = {}
         for publisher, url in self.futures.iteritems():
-            future_soups[publisher] = self.make_soup(url)
+            try:
+                future_soups[publisher] = self.make_soup(url)
+            except HTTPError:
+                print "Couldn't make soup for "+publisher
+                print url
         return future_soups
 
     def print_books_per_day(self, date, books):
