@@ -273,6 +273,8 @@ def main(pull_list_file):
     '''main loop'''
     comics_jarvis = CLDBot(pull_list_file)
     running = True
+    check = comics_jarvis.process('check')
+    print check
     while running:
         user_input = raw_input('> ')
         if user_input == 'quit':
