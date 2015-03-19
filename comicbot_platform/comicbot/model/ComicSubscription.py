@@ -1,6 +1,7 @@
 from django.db import models
 
 from models.Comic import Comic
+from models.User import User
 
 class ComicSubscription(models.Model):
 
@@ -19,6 +20,7 @@ class ComicSubscription(models.Model):
         (COVER_TYPE_BOTH, 'both')
     )
 
+    user = models.ForeignKey(User, related_name='subscriptions')
     comic = models.ForeignKey(Comic, related_name='subscriptions')
     issue = models.BooleanField(default=False)
     trade = models.BooleanField(default=False)
