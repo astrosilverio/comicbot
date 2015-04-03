@@ -1,4 +1,6 @@
+import datetime
 from django.db import models
+from utils import get_wednesday
 
 class Comic(models.Model):
 
@@ -22,6 +24,19 @@ class User(models.Model):
 
     def __str__(self):
         return self.username
+
+    def check_recent_releases(self, comics=None, publishers=None, after_date=None, before_date=None):
+        if not after_date:
+            after_date = get_wednesday(datetime.date.today())
+        if not before_date:
+            before_date = after_date
+        query = self.subscriptions.filter(comic__recent_releases__release_date__range=(after_date, before_date))
+        if comics:
+            query = query.filter(comic__name__in=comics)
+        if publishers:
+            query = query.filter(comic__publisher__in=publishers)
+
+        return list(query)
 
 class ComicSubscription(models.Model):
 
