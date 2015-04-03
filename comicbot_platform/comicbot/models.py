@@ -8,6 +8,9 @@ class Comic(models.Model):
     name = models.CharField(db_index=True, max_length=128, null=False)
     publisher = models.CharField(db_index=True, max_length=32, null=False)
 
+    def __str__(self):
+        return "{name} ({publisher})".format(name=self.name, publisher=self.publisher)
+
 class User(models.Model):
 
     class Meta:
@@ -17,6 +20,8 @@ class User(models.Model):
     password = models.CharField(max_length=128, null=False)
     email = models.CharField(db_index=True, max_length=64, null=True)
 
+    def __str__(self):
+        return self.username
 
 class ComicSubscription(models.Model):
 
@@ -48,6 +53,8 @@ class ComicSubscription(models.Model):
     subscription_type = models.CharField(choices=SUBSCRIPTION_TYPE_CHOICES, max_length=2, default=TYPE_ONGOING)
     variant_pref = models.CharField(choices=VARIANT_PREF_CHOICES, max_length=2, default=COVER_TYPE_BOTH)
 
+    def __str__(self):
+        return "{user}-{comic}".format(user=self.user.username, comic=self.comic.name)
 
 class Release(models.Model):
 
@@ -56,3 +63,6 @@ class Release(models.Model):
 
     comic = models.ForeignKey(Comic, related_name='recent_releases')
     release_date = models.DateTimeField(null=False, db_index=True)
+
+    def __str__(self):
+        return "{comic}: {date}".format(comic=self.comic.name, date=self.release_date)
