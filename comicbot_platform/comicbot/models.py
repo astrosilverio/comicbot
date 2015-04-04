@@ -1,4 +1,6 @@
+from collections import defaultdict
 import datetime
+
 from django.db import models
 from utils import get_wednesday
 
@@ -36,7 +38,12 @@ class User(models.Model):
         if publishers:
             query = query.filter(comic__publisher__in=publishers)
 
-        return list(query)
+        results = defaultdict(list)
+
+        for comic in [sub.comic for sub in query]:
+            results[comic.publisher].append(comic.name)
+
+        return results
 
 class ComicSubscription(models.Model):
 
@@ -70,6 +77,8 @@ class ComicSubscription(models.Model):
 
     def __str__(self):
         return "{user}-{comic}".format(user=self.user.username, comic=self.comic.name)
+
+
 
 class Release(models.Model):
 
