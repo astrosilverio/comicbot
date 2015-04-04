@@ -16,14 +16,14 @@ class CLDBot(object):
     next_week_url = 'http://www.comiclist.com/index.php/newreleases/next-week'
     ignores = ['to', 'in', 'if', 'get', 'week', 'for', 'this', 'and', 'or', 'print']
     command_words = ['next', 'add', 'remove','predict','future','pull', 'check']
-    
+
     def __init__(self, pull_list):
         self.pull_list = self.make_pull_list(pull_list)
         self.today = datetime.date.today()
         self.this_weds = self.get_weds(self.today)
         m_d_y = self.make_m_d_y(self.this_weds)
         self.futures = {'Marvel': 'http://www.comiclist.com/index.php/lists/marvel-comics-extended-forecast-for-'+m_d_y,
-                'DC':'http://www.comiclist.com/index.php/lists/dc-comics-extended-forecast-for-'+m_d_y, 
+                'DC':'http://www.comiclist.com/index.php/lists/dc-comics-extended-forecast-for-'+m_d_y,
                 'Image': 'http://www.comiclist.com/index.php/lists/image-comics-extended-forecast-for-'+m_d_y,
                 'BOOM': 'http://www.comiclist.com/index.php/lists/boom-studios-extended-forecast-for-'+m_d_y,
                 'Dark Horse': 'http://www.comiclist.com/index.php/lists/dark-horse-comics-extended-forecast-for-'+m_d_y
@@ -92,7 +92,7 @@ class CLDBot(object):
                         variant = variant[-1]
                         my_books[issue].append(variant)
         return my_books
-        
+
     def check_future_soup(self, soup, titles=None):
         '''for future predictions, data is in table, not a list of links'''
         if not titles:
@@ -184,7 +184,7 @@ class CLDBot(object):
             date = str(self.this_weds+datetime.timedelta(days=7))
             out = self.print_books_per_day(date, books)
             return out
-            
+
     def predict(self, *titles):
         '''checks predictions pages for titles'''
         if not titles:
@@ -231,7 +231,7 @@ class CLDBot(object):
             out = '\n\n'.join([intro, added])
         self.pull_list.extend(titles)
         return out
-        
+
     def remove_from_pull(self, *titles):
         '''removes things from pull list'''
         if not titles:
@@ -282,7 +282,7 @@ def main(pull_list_file):
         output = comics_jarvis.process(user_input)
         if output:
             print output
-            
+
 if __name__ == '__main__':
     try:
         pull_list_file = sys.argv[1]
