@@ -73,8 +73,12 @@ class TestUtils(TestCase):
         self.assertEqual(wednesday, datetime.date(2015, 3, 11))
 
 
-# class CheckRecentReleasesTest(BaseTest):
+class CheckRecentReleasesTest(BaseTest):
 
-#     @
-#     def test_with_just_user(self):
-#         results = self.user.check_recent_releases()
+    @freeze_time("2015-03-11")
+    def test_with_just_user(self):
+        results = self.user.check_recent_releases()
+        self.assertEqual(len(results.keys()), 1)
+        self.assertEqual(results.keys(), ['marvel'])
+        self.assertEqual(results.values(), ['ms. marvel'])
+
