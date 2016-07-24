@@ -15,12 +15,14 @@ def get_wednesday(day=None):
         weds = day + datetime.timedelta(days=delta)
         return weds
 
+
 def format_comics(comics):
     output = ''
     pubs = sorted(comics.keys())
     for pub in pubs:
         output = output + format_single_publisher(pub.title(), sorted(comics[pub])) + '\n\n'
     return output
+
 
 def format_single_publisher(publisher, names):
     single_line_out = '\t{}'

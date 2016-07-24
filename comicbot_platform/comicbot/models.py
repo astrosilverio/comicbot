@@ -2,7 +2,10 @@ from collections import defaultdict
 import datetime
 
 from django.db import models
+
+import constants
 from utils import get_wednesday
+
 
 class Comic(models.Model):
 
@@ -14,6 +17,7 @@ class Comic(models.Model):
 
     def __str__(self):
         return "{name} ({publisher})".format(name=self.name, publisher=self.publisher)
+
 
 class User(models.Model):
 
@@ -27,42 +31,21 @@ class User(models.Model):
     def __str__(self):
         return self.username
 
-    def check_recent_releases(self, comics=None, publishers=None, after_date=None, before_date=None):
-        if not after_date:
-            after_date = get_wednesday(datetime.date.today())
-        if not before_date:
-            before_date = after_date
-        query = self.subscriptions.filter(comic__recent_releases__release_date__range=(after_date, before_date))
-        if comics:
-            query = query.filter(comic__name__in=comics)
-        if publishers:
-            query = query.filter(comic__publisher__in=publishers)
-
-        results = defaultdict(list)
-
-        for comic in [sub.comic for sub in query]:
-            results[comic.publisher].append(comic.name)
-
-        return results
 
 class ComicSubscription(models.Model):
 
     class Meta:
         app_label = 'comicbot'
 
-    TYPE_ONGOING = 'GO'
-    TYPE_ONETIME = 'NT'
     SUBSCRIPTION_TYPE_CHOICES = (
-        (TYPE_ONGOING, 'ongoing'),
-        (TYPE_ONETIME, 'onetime')
+        (constants.SUBSCRIPTION_TYPE_ONGOING, 'ongoing'),
+        (constants.SUBSCRIPTION_TYPE_ONETIME, 'onetime')
     )
-    COVER_TYPE_REGULAR = 'RG'
-    COVER_TYPE_VARIANT = 'VR'
-    COVER_TYPE_BOTH = 'BT'
+
     VARIANT_PREF_CHOICES = (
-        (COVER_TYPE_REGULAR, 'regular'),
-        (COVER_TYPE_VARIANT, 'variant'),
-        (COVER_TYPE_BOTH, 'both')
+        (constants.COVER_TYPE_REGULAR, 'regular'),
+        (constants.COVER_TYPE_VARIANT, 'variant'),
+        (constants.COVER_TYPE_BOTH, 'both')
     )
 
     user = models.ForeignKey(User, related_name='subscriptions')
@@ -72,12 +55,11 @@ class ComicSubscription(models.Model):
     hardcover = models.BooleanField(default=False)
     start_date = models.DateTimeField(auto_now_add=True)
     expire_date = models.DateTimeField(null=True)
-    subscription_type = models.CharField(choices=SUBSCRIPTION_TYPE_CHOICES, max_length=2, default=TYPE_ONGOING)
-    variant_pref = models.CharField(choices=VARIANT_PREF_CHOICES, max_length=2, default=COVER_TYPE_BOTH)
+    subscription_type = models.CharField(choices=SUBSCRIPTION_TYPE_CHOICES, max_length=64, default=constants.SUBSCRIPTION_TYPE_ONGOING)
+    variant_pref = models.CharField(choices=VARIANT_PREF_CHOICES, max_length=64, default=constants.COVER_TYPE_BOTH)
 
     def __str__(self):
         return "{user}-{comic}".format(user=self.user.username, comic=self.comic.name)
-
 
 
 class Release(models.Model):
@@ -85,8 +67,17 @@ class Release(models.Model):
     class Meta:
         app_label = 'comicbot'
 
+    RELEASE_TYPE_CHOICES = (
+        (constants.RELEASE_TYPE_ISSUE, 'issue'),
+        (constants.RELEASE_TYPE_TRADE, 'trade'),
+        (constants.RELEASE_TYPE_HARDCOVER, 'hardcover'),
+        (constants.RELEASE_TYPE_OTHER, 'other')
+    )
+
     comic = models.ForeignKey(Comic, related_name='recent_releases')
-    release_date = models.DateTimeField(null=False, db_index=True)
+    release_date = models.DateTimeField(null=False, db_index=True, default=get_wednesday)
+    release_type = models.CharField(choices=RELEASE_TYPE_CHOICES, default=constants.RELEASE_TYPE_ISSUE)
+    variant = models.BooleanField(default=False)
 
     def __str__(self):
         return "{comic}: {date}".format(comic=self.comic.name, date=self.release_date)
